@@ -19,6 +19,7 @@ const WORK_STYLES = ["Remote", "Office", "Hybrid"];
 
 interface Props {
   onSubmit: (profile: UserProfile) => void;
+  initialProfile?: UserProfile | null;
 }
 
 const ToggleChip = ({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) => (
@@ -35,9 +36,9 @@ const ToggleChip = ({ label, selected, onClick }: { label: string; selected: boo
   </button>
 );
 
-const MultiStepForm = ({ onSubmit }: Props) => {
+const MultiStepForm = ({ onSubmit, initialProfile }: Props) => {
   const [step, setStep] = useState(0);
-  const [profile, setProfile] = useState<UserProfile>({
+  const [profile, setProfile] = useState<UserProfile>(initialProfile || {
     name: "", age: 18, location: "", qualification: "", stream: "",
     interests: [], strengths: [], weaknesses: [], careerGoal: "", workStyle: "",
   });

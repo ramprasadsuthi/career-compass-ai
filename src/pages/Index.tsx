@@ -2,12 +2,23 @@ import { useState, useEffect } from "react";
 import MultiStepForm from "@/components/MultiStepForm";
 import ResultsDashboard from "@/components/ResultsDashboard";
 import { UserProfile, CareerResult, generateCareerResult } from "@/lib/careerEngine";
+import { deleteCareerReport, loadCareerReport, saveCareerReport } from "@/lib/careerStorage";
 import { Sparkles, Loader2 } from "lucide-react";
 
 const Index = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [result, setResult] = useState<CareerResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [savedReportAvailable, setSavedReportAvailable] = useState(false);
+
+  useEffect(() => {
+    const saved = loadCareerReport();
+    if (saved) {
+      setProfile(saved.profile);
+      setResult(saved.result);
+      setSavedReportAvailable(true);
+    }
+  }, []);
 
   const handleSubmit = (p: UserProfile) => {
     setProfile(p);
@@ -22,14 +33,17 @@ const Index = () => {
   const handleBack = () => {
     setResult(null);
   };
-
-  // Check for saved results
-  useEffect(() => {
-    const saved = localStorage.getItem("careerpath_profile");
-    if (saved && !profile) {
-      // Could restore, but let user start fresh
-    }
-  }, []);
+  const handleSave = () => {
+    if (!profile || !result) return;
+    saveCareerReport(profile, result);
+    setSavedReportAvailable(true);
+  };
+  const handleDelete = () => {
+    deleteCareerReport();
+    setSavedReportAvailable(false);
+    setResult(null);
+    setProfile(null);
+  };
 
   if (loading) {
     return (
@@ -59,7 +73,7 @@ const Index = () => {
           </div>
         </div>
         <div className="px-4 pb-16">
-          <ResultsDashboard result={result} profile={profile} onBack={handleBack} />
+          <ResultsDashboard result={result} profile={profile} onBack={handleBack} onSave={handleSave} onDelete={handleDelete} isSaved={savedReportAvailable} />
         </div>
       </div>
     );
@@ -84,7 +98,7 @@ const Index = () => {
 
       {/* Form */}
       <div className="px-4 -mt-8 pb-16">
-        <MultiStepForm onSubmit={handleSubmit} />
+        <MultiStepForm onSubmit={handleSubmit} initialProfile={profile} />
       </div>
     </div>
   );
